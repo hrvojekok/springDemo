@@ -31,11 +31,25 @@ public class FakePersonDataAccessService implements PersonDao {
 
     @Override
     public int deletePersonById(UUID id) {
-        return 0;
+        Optional<Person> personMaybe = selectPersonById(id);
+        if(personMaybe.isEmpty()){
+            return 0;
+        } else {
+            DB.remove(personMaybe.get());
+            return 1;
+        }
     }
 
     @Override
-    public int updatePersonById(UUID id, Person person) {
-        return 0;
+    public int updatePersonById(UUID id, Person updatePerson) {
+        return selectPersonById(id).map(person1 -> {
+            int inedxOfPersonToUpdate = DB.indexOf(person1);
+            if(inedxOfPersonToUpdate >= 0){
+                DB.set(inedxOfPersonToUpdate, new Person(id, updatePerson.getName()));
+                return 1;
+            } else {
+                return 0;
+            }
+        }).orElse(0);
     }
 }
